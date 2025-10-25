@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>AI Booking Assistant - Golden Palm Hotel</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="chat-page-wrapper">
+        <!-- Page Header -->
+        <section class="chat-hero-section">
+            <div class="hero-content">
+                <div class="hero-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="hero-text">
+                    <h1 class="hero-title">AI Booking Assistant</h1>
+                    <p class="hero-subtitle">Get instant help with room bookings, availability, and hotel information</p>
+                </div>
+            </div>
+            <div class="hero-decoration">
+                <div class="decoration-element"></div>
+                <div class="decoration-element"></div>
+                <div class="decoration-element"></div>
+            </div>
+        </section>
+
+        <!-- Chat Interface -->
+        <section class="chat-main-section">
+            <div class="chat-container">
+                <div class="chat-grid">
+                    <!-- Chat Interface -->
+                    <div class="chat-interface-card">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="chat-header-content">
+                                <h3 class="chat-header-title">Live Chat Support</h3>
+                                <p class="chat-header-subtitle">Your AI booking assistant is ready to help</p>
+                            </div>
+                            <div class="chat-status">
+                                <div class="status-indicator online"></div>
+                                <span class="status-text">Online</span>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-messages-container">
+                            <!-- Chat Messages -->
+                            <div id="chat-messages" class="chat-messages">
+                                <!-- Welcome message -->
+                                <div class="message bot-message">
+                                    <div class="message-content">
+                                        <div class="message-avatar">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <div class="message-bubble">
+                                            <p>Hello! 🏨 Welcome to <strong>Golden Palm Hotel</strong>! I'm your AI booking assistant, here to help you find the perfect room for your stay. How can I assist you today?</p>
+                                        </div>
+                                        <div class="message-time">Just now</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Typing Indicator -->
+                            <div id="typing-indicator" class="message bot-message typing-message" style="display: none;">
+                                <div class="message-content">
+                                    <div class="message-avatar">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <div class="message-bubble typing">
+                                        <div class="typing-dots">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Action Buttons -->
+                        <div class="quick-actions">
+                            <div class="quick-actions-header">
+                                <i class="fas fa-bolt me-2"></i>
+                                <span>Quick Actions</span>
+                            </div>
+                            <div class="quick-actions-grid">
+                                <button class="quick-action-btn" data-message="I want to book a room">
+                                    <i class="fas fa-bed"></i>
+                                    <span>Book Room</span>
+                                </button>
+                                <button class="quick-action-btn" data-message="Show me available rooms">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Check Availability</span>
+                                </button>
+                                <button class="quick-action-btn" data-message="What are your room types and prices?">
+                                    <i class="fas fa-tags"></i>
+                                    <span>Room Prices</span>
+                                </button>
+                                <button class="quick-action-btn" data-message="What amenities do you offer?">
+                                    <i class="fas fa-star"></i>
+                                    <span>Amenities</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div class="chat-input-container">
+                            <div class="chat-input-wrapper">
+                                <div class="input-field">
+                                    <input type="text" id="chat-input" class="chat-input" 
+                                           placeholder="Type your message here..." 
+                                           autocomplete="off">
+                                    <button class="send-button" id="send-button">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Booking Panel -->
+                    <div class="booking-sidebar">
+                        <!-- Current Booking Intent -->
+                        <div id="booking-intent-panel" class="booking-panel" style="display: none;">
+                            <div class="panel-header">
+                                <div class="panel-icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <div class="panel-title">
+                                    <h4>Booking Details</h4>
+                                    <p>Your current booking information</p>
+                                </div>
+                            </div>
+                            <div class="panel-content">
+                                <div id="booking-details">
+                                    <!-- Booking details will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Room Suggestions -->
+                        <div id="room-suggestions-panel" class="booking-panel" style="display: none;">
+                            <div class="panel-header">
+                                <div class="panel-icon">
+                                    <i class="fas fa-bed"></i>
+                                </div>
+                                <div class="panel-title">
+                                    <h4>Available Rooms</h4>
+                                    <p>Perfect matches for your stay</p>
+                                </div>
+                            </div>
+                            <div class="panel-content">
+                                <div id="room-suggestions">
+                                    <!-- Room suggestions will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Booking Form -->
+                        <div id="booking-form-panel" class="booking-panel" style="display: none;">
+                            <div class="panel-header">
+                                <div class="panel-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="panel-title">
+                                    <h4>Complete Booking</h4>
+                                    <p>Almost there! Fill in your details</p>
+                                </div>
+                            </div>
+                            <div class="panel-content">
+                                <form id="booking-form" class="booking-form">
+                                    <div class="form-floating-modern">
+                                        <input type="text" class="form-control-modern" id="customer-name" required>
+                                        <label for="customer-name" class="form-label-modern">
+                                            <i class="fas fa-user me-2"></i>Full Name
+                                        </label>
+                                    </div>
+                                    <div class="form-floating-modern">
+                                        <input type="email" class="form-control-modern" id="customer-email" required>
+                                        <label for="customer-email" class="form-label-modern">
+                                            <i class="fas fa-envelope me-2"></i>Email Address
+                                        </label>
+                                    </div>
+                                    <div class="form-floating-modern">
+                                        <input type="tel" class="form-control-modern" id="customer-phone" required>
+                                        <label for="customer-phone" class="form-label-modern">
+                                            <i class="fas fa-phone me-2"></i>Phone Number
+                                        </label>
+                                    </div>
+                                    <div class="form-floating-modern">
+                                        <textarea class="form-control-modern" id="special-requests" rows="3" 
+                                                  placeholder=" "></textarea>
+                                        <label for="special-requests" class="form-label-modern">
+                                            <i class="fas fa-comment me-2"></i>Special Requests (Optional)
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn-complete-booking">
+                                        <div class="btn-content">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <span>Confirm Booking</span>
+                                        </div>
+                                        <div class="btn-shimmer"></div>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Help Panel -->
+                        <div class="booking-panel help-panel">
+                            <div class="panel-header">
+                                <div class="panel-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                <div class="panel-title">
+                                    <h4>Need Help?</h4>
+                                    <p>I'm here to assist you</p>
+                                </div>
+                            </div>
+                            <div class="panel-content">
+                                <div class="help-features">
+                                    <div class="help-feature">
+                                        <i class="fas fa-calendar-check"></i>
+                                        <span>Check room availability</span>
+                                    </div>
+                                    <div class="help-feature">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Get room details and pricing</span>
+                                    </div>
+                                    <div class="help-feature">
+                                        <i class="fas fa-bookmark"></i>
+                                        <span>Make reservations</span>
+                                    </div>
+                                    <div class="help-feature">
+                                        <i class="fas fa-comments"></i>
+                                        <span>Answer hotel questions</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="emergency-contact">
+                                    <div class="contact-header">
+                                        <i class="fas fa-phone-alt me-2"></i>
+                                        <span>Need immediate help?</span>
+                                    </div>
+                                    <div class="contact-info">
+                                        <span class="contact-label">24/7 Hotline:</span>
+                                        <a href="tel:0114545678" class="contact-number">011-4545678</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Additional CSS -->
+<th:block th:fragment="additional-css">
+    <style>
+        /* Chat Page Styles */
+        .chat-page-wrapper {
+            background: var(--gradient-dark);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        
+        /* Hero Section */
+        .chat-hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 3rem;
+        }
+        
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .hero-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--bg-primary);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            line-height: 1.6;
+            margin: 0;
+            max-width: 600px;
+        }
+        
+        .hero-decoration {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .decoration-element {
+            position: absolute;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .decoration-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .decoration-element:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 80px;
+            right: 100px;
+            animation-delay: 1s;
+        }
+        
+        .decoration-element:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 140px;
+            right: 50px;
+            animation-delay: 2s;
+        }
+        
+        /* Chat Main Section */
+        .chat-main-section {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .chat-container {
+            width: 100%;
+        }
+        
+        .chat-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        /* Chat Interface Card */
+        .chat-interface-card {
+            background: var(--gradient-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-2xl);
+            display: flex;
+            flex-direction: column;
+            height: 700px;
+        }
+        
+        .chat-header {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .chat-header-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .chat-header-content {
+            flex: 1;
+        }
+        
+        .chat-header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .chat-header-subtitle {
+            opacity: 0.9;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        
+        .chat-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-full);
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Chat Messages */
+        .chat-messages-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            background: var(--bg-card);
+            position: relative;
+        }
+        
+        .message {
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        .message-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            position: relative;
+        }
+        
+        .user-message .message-content {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .bot-message .message-avatar {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .user-message .message-avatar {
+            background: var(--gradient-secondary);
+            color: var(--bg-primary);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .user-message .message-avatar::before {
+            content: "👤";
+            font-size: 1.125rem;
+        }
+        
+        .message-bubble {
+            max-width: 75%;
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius-2xl);
+            word-wrap: break-word;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .bot-message .message-bubble {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-primary);
+            border-bottom-left-radius: 8px;
+        }
+        
+        .user-message .message-bubble {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            border-bottom-right-radius: 8px;
+            border: 2px solid var(--accent-primary);
+        }
+        
+        .message-bubble p {
+            margin: 0;
+            line-height: 1.6;
+            color: inherit;
+        }
+        
+        .message-bubble p:not(:last-child) {
+            margin-bottom: 1rem;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .user-message .message-time {
+            text-align: right;
+        }
+        
+        /* Typing Indicator */
+        .typing-message .message-bubble {
+            padding: 1rem 1.5rem;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 6px;
+            padding: 0.5rem 0;
+        }
+        
+        .typing-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { 
+                transform: scale(0.8); 
+                opacity: 0.5; 
+            }
+            40% { 
+                transform: scale(1.2); 
+                opacity: 1; 
+            }
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            padding: 1.5rem 2rem;
+            background: var(--bg-card-hover);
+            border-top: 1px solid var(--border-primary);
+        }
+        
+        .quick-actions-header {
+            display: flex;
+            align-items: center;
+            color: var(--accent-primary);
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .quick-action-btn:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .quick-action-btn i {
+            font-size: 1.25rem;
+            color: var(--accent-primary);
+        }
+        
+        /* Chat Input */
+        .chat-input-container {
+            padding: 2rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-primary);
+        }
+        
+        .chat-input-wrapper {
+            max-width: 100%;
+        }
+        
+        .input-field {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-full);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .input-field:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
+        }
+        
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            resize: none;
+            outline: none;
+        }
+        
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .send-button {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50%;
+            color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .send-button:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+        }
+        
+        .send-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Booking Sidebar */
+        .booking-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .booking-panel {
+            background: var(--gradient-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+        }
+        
+        .booking-panel:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-xl), 0 0 30px rgba(255, 215, 0, 0.15);
+        }
+        
+        .panel-header {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .panel-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .panel-title h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .panel-title p {
+            opacity: 0.9;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .panel-content {
+            padding: 1.5rem;
+        }
+        
+        /* Booking Form */
+        .booking-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .form-floating-modern {
+            position: relative;
+        }
+        
+        .form-control-modern {
+            width: 100%;
+            height: 60px;
+            padding: 1.25rem 1rem 0.75rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            resize: none;
+        }
+        
+        .form-control-modern:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
+            background: var(--bg-card-hover);
+            outline: none;
+        }
+        
+        .form-label-modern {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 500;
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            background: transparent;
+            padding: 0 0.5rem;
+        }
+        
+        .form-control-modern:focus + .form-label-modern,
+        .form-control-modern:not(:placeholder-shown) + .form-label-modern,
+        .form-control-modern:valid + .form-label-modern {
+            top: 0;
+            left: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--accent-primary);
+            background: var(--bg-card);
+        }
+        
+        .form-control-modern[rows] + .form-label-modern {
+            top: 1.5rem;
+            transform: none;
+        }
+        
+        .form-control-modern[rows]:focus + .form-label-modern,
+        .form-control-modern[rows]:not(:placeholder-shown) + .form-label-modern {
+            top: 0;
+            transform: none;
+        }
+        
+        .btn-complete-booking {
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1.1rem;
+            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+        
+        .btn-complete-booking:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .btn-shimmer {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .btn-complete-booking:hover .btn-shimmer {
+            left: 100%;
+        }
+        
+        /* Help Panel */
+        .help-features {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .help-feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .help-feature:hover {
+            border-color: var(--accent-primary);
+            transform: translateX(5px);
+        }
+        
+        .help-feature i {
+            color: var(--accent-primary);
+            font-size: 1.125rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .help-feature span {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .emergency-contact {
+            padding: 1.5rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid var(--accent-primary);
+            border-radius: var(--radius-lg);
+        }
+        
+        .contact-header {
+            display: flex;
+            align-items: center;
+            color: var(--accent-primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .contact-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .contact-number {
+            color: var(--accent-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-number:hover {
+            color: var(--accent-secondary);
+            transform: scale(1.05);
+        }
+        
+        /* Room Cards in Suggestions */
+        .room-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .room-card:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .room-card.selected {
+            border-color: var(--accent-primary);
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+        
+        .room-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin: 0.5rem 0;
+        }
+        
+        .booking-detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-primary);
+        }
+        
+        .booking-detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .booking-detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .booking-detail-value {
+            color: var(--accent-primary);
+            font-weight: 700;
+        }
+        
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--bg-card-hover);
+            border-radius: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+            opacity: 0.7;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            opacity: 1;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .chat-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .chat-interface-card {
+                height: 600px;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .chat-page-wrapper {
+                padding: 1rem 0.5rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .chat-header {
+                padding: 1.5rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .chat-messages {
+                padding: 1.5rem;
+            }
+            
+            .chat-input-container {
+                padding: 1.5rem;
+            }
+            
+            .quick-actions {
+                padding: 1rem 1.5rem;
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            .panel-header,
+            .panel-content {
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.75rem;
+            }
+            
+            .chat-interface-card {
+                height: 500px;
+            }
+            
+            .chat-header {
+                padding: 1rem;
+            }
+            
+            .chat-messages {
+                padding: 1rem;
+            }
+            
+            .message-bubble {
+                max-width: 85%;
+                padding: 1rem 1.25rem;
+            }
+            
+            .quick-actions,
+            .chat-input-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</th:block>
+
+<!-- Additional JavaScript -->
+<th:block th:fragment="additional-js">
+    <script>
+        class HotelChatbot {
+            constructor() {
+                this.sessionId = null;
+                this.selectedRoomId = null;
+                this.currentBookingIntent = {};
+                this.isWaitingForResponse = false;
+                
+                this.initializeElements();
+                this.attachEventListeners();
+                
+                console.log('🤖 Hotel Chatbot initialized');
+            }
+            
+            initializeElements() {
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatInput = document.getElementById('chat-input');
+                this.sendButton = document.getElementById('send-button');
+                this.typingIndicator = document.getElementById('typing-indicator');
+                
+                // Panels
+                this.bookingIntentPanel = document.getElementById('booking-intent-panel');
+                this.roomSuggestionsPanel = document.getElementById('room-suggestions-panel');
+                this.bookingFormPanel = document.getElementById('booking-form-panel');
+                
+                // Form elements
+                this.bookingForm = document.getElementById('booking-form');
+                this.customerName = document.getElementById('customer-name');
+                this.customerEmail = document.getElementById('customer-email');
+                this.customerPhone = document.getElementById('customer-phone');
+                this.specialRequests = document.getElementById('special-requests');
+            }
+            
+            attachEventListeners() {
+                // Send message on button click
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                
+                // Send message on Enter key
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                
+                // Quick action buttons
+                document.querySelectorAll('.quick-action-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const message = button.getAttribute('data-message');
+                        this.chatInput.value = message;
+                        this.sendMessage();
+                    });
+                });
+                
+                // Booking form submission
+                this.bookingForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.completeBooking();
+                });
+                
+                // Auto-resize chat input
+                this.chatInput.addEventListener('input', () => {
+                    this.chatInput.style.height = 'auto';
+                    this.chatInput.style.height = this.chatInput.scrollHeight + 'px';
+                });
+            }
+            
+            async sendMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message || this.isWaitingForResponse) return;
+                
+                // Clear input and show user message
+                this.chatInput.value = '';
+                this.addMessage(message, 'user');
+                
+                // Show typing indicator
+                this.showTypingIndicator();
+                this.isWaitingForResponse = true;
+                
+                try {
+                    const response = await this.callChatAPI(message);
+                    
+                    if (response.success) {
+                        this.sessionId = response.sessionId;
+                        
+                        // Add bot response
+                        this.addMessage(response.response, 'bot');
+                        
+                        // Update booking intent panel
+                        this.updateBookingIntentPanel(response);
+                        
+                        // Handle room suggestions
+                        if (response.suggestedRooms && response.suggestedRooms.length > 0) {
+                            this.showRoomSuggestions(response.suggestedRooms);
+                        }
+                        
+                        // Show booking form if ready
+                        if (response.needsBookingDetails) {
+                            this.showBookingForm();
+                        }
+                        
+                    } else {
+                        this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    this.addMessage(
+                        'I apologize, but I\'m experiencing technical difficulties. 😔\n\n' +
+                        'For immediate assistance, please call our hotline: **011-4545678**', 
+                        'bot'
+                    );
+                } finally {
+                    this.hideTypingIndicator();
+                    this.isWaitingForResponse = false;
+                }
+            }
+            
+            async callChatAPI(message) {
+                const response = await fetch('/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                    },
+                    body: JSON.stringify({
+                        sessionId: this.sessionId,
+                        message: message,
+                        userId: null // Will be set from authentication context
+                    })
+                });
+                
+                return await response.json();
+            }
+            
+            addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                
+                const avatar = sender === 'bot' ? '🤖' : '👤';
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-avatar">${sender === 'bot' ? avatar : ''}</div>
+                        <div class="message-bubble">
+                            <p>${this.formatMessage(text)}</p>
+                        </div>
+                    </div>
+                `;
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            formatMessage(text) {
+                // Convert markdown-like formatting
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                text = text.replace(/\n/g, '<br>');
+                return text;
+            }
+            
+            showTypingIndicator() {
+                this.typingIndicator.style.display = 'block';
+                this.scrollToBottom();
+            }
+            
+            hideTypingIndicator() {
+                this.typingIndicator.style.display = 'none';
+            }
+            
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100);
+            }
+            
+            updateBookingIntentPanel(response) {
+                if (!response.entities || Object.keys(response.entities).length === 0) {
+                    return;
+                }
+                
+                let detailsHTML = '';
+                
+                if (response.entities.dates) {
+                    detailsHTML += `
+                        <div class="booking-detail-item">
+                            <span class="booking-detail-label">📅 Dates:</span>
+                            <span class="booking-detail-value">${response.entities.dates.join(' to ')}</span>
+                        </div>
+                    `;
+                }
+                
+                if (response.entities.guests) {
+                    detailsHTML += `
+                        <div class="booking-detail-item">
+                            <span class="booking-detail-label">👥 Guests:</span>
+                            <span class="booking-detail-value">${response.entities.guests}</span>
+                        </div>
+                    `;
+                }
+                
+                if (response.entities.room_type) {
+                    detailsHTML += `
+                        <div class="booking-detail-item">
+                            <span class="booking-detail-label">🛏️ Room Type:</span>
+                            <span class="booking-detail-value">${response.entities.room_type}</span>
+                        </div>
+                    `;
+                }
+                
+                if (detailsHTML) {
+                    document.getElementById('booking-details').innerHTML = detailsHTML;
+                    this.bookingIntentPanel.style.display = 'block';
+                }
+            }
+            
+            showRoomSuggestions(rooms) {
+                let suggestionsHTML = '';
+                
+                rooms.forEach((room, index) => {
+                    const amenities = room.amenities ? room.amenities.slice(0, 3).join(', ') : 'Basic amenities';
+                    
+                    suggestionsHTML += `
+                        <div class="room-card" data-room-id="${room.room_id}">
+                            <h6><strong>${room.type_name} - Room ${room.room_number}</strong></h6>
+                            <div class="room-price">LKR ${room.price_per_night.toLocaleString()}/night</div>
+                            <div class="text-muted">Total: LKR ${room.total_cost.toLocaleString()}</div>
+                            <div class="mt-2">
+                                <small>👥 Up to ${room.max_occupancy} guests</small><br>
+                                <small>✨ ${amenities}</small>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm mt-2 select-room-btn" data-room-id="${room.room_id}">
+                                Select This Room
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('room-suggestions').innerHTML = suggestionsHTML;
+                this.roomSuggestionsPanel.style.display = 'block';
+                
+                // Add click listeners to select room buttons
+                document.querySelectorAll('.select-room-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const roomId = parseInt(e.target.getAttribute('data-room-id'));
+                        this.selectRoom(roomId);
+                    });
+                });
+            }
+            
+            async selectRoom(roomId) {
+                this.selectedRoomId = roomId;
+                
+                // Visual feedback
+                document.querySelectorAll('.room-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelector(`[data-room-id="${roomId}"]`).classList.add('selected');
+                
+                // Send selection to backend
+                try {
+                    await fetch(`/chat/session/${this.sessionId}/select-room`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify({ roomId: roomId })
+                    });
+                    
+                    // Show booking form
+                    this.showBookingForm();
+                    
+                    // Add confirmation message
+                    this.addMessage('Perfect! I\'ve selected that room for you. Please provide your details to complete the booking.', 'bot');
+                    
+                } catch (error) {
+                    console.error('Error selecting room:', error);
+                }
+            }
+            
+            showBookingForm() {
+                this.bookingFormPanel.style.display = 'block';
+                
+                // Scroll to booking form
+                setTimeout(() => {
+                    this.bookingFormPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            }
+            
+            async completeBooking() {
+                if (!this.selectedRoomId) {
+                    alert('Please select a room first.');
+                    return;
+                }
+                
+                const customerDetails = {
+                    name: this.customerName.value,
+                    email: this.customerEmail.value,
+                    phone: this.customerPhone.value,
+                    specialRequests: this.specialRequests.value
+                };
+                
+                try {
+                    const response = await fetch('/chat/book', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.sessionId,
+                            roomId: this.selectedRoomId,
+                            customerDetails: customerDetails
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.addMessage(
+                            `🎉 Excellent! Your booking has been confirmed!\n\n` +
+                            `**Booking Reference:** ${result.bookingId}\n` +
+                            `**Customer:** ${customerDetails.name}\n` +
+                            `**Email:** ${customerDetails.email}\n\n` +
+                            `A confirmation email has been sent to you. Thank you for choosing Gold Palm Hotel!`,
+                            'bot'
+                        );
+                        
+                        // Hide booking panels
+                        this.bookingFormPanel.style.display = 'none';
+                        this.roomSuggestionsPanel.style.display = 'none';
+                        
+                    } else {
+                        this.addMessage('Sorry, there was an error completing your booking. Please try again or call our hotline: 011-4545678', 'bot');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error completing booking:', error);
+                    this.addMessage('Sorry, there was an error completing your booking. Please try again or call our hotline: 011-4545678', 'bot');
+                }
+            }
+        }
+        
+        // Initialize chatbot when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.hotelChatbot = new HotelChatbot();
+        });
+        
+        console.log('🤖 Hotel Booking Chatbot loaded');
+    </script>
+</th:block>
+</body>
+</html>

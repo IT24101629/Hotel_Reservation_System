@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Payment Successful - Golden Palm Hotel</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Hero Section -->
+    <section class="hero-section" style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/banner/pay-success.jpg') center/cover no-repeat;">
+        <div class="container">
+            <div class="text-center">
+                <div class="fade-in-up">
+                    <div class="success-icon-large mb-4">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h1 class="display-4 mb-6 text-golden">
+                        Payment Successful!
+                    </h1>
+                </div>
+                <div class="fade-in-up" style="animation-delay: 0.2s;">
+                    <p class="lead mb-8">
+                        Thank you for your booking. Your payment has been processed successfully.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-5">
+        <div th:if="${booking}" class="card shadow-glow">
+            <div class="card-header">
+                <h2 class="mb-0">
+                    <i class="fas fa-clipboard-check text-golden me-3"></i>
+                    Booking Confirmation
+                </h2>
+            </div>
+            <div class="card-body">
+                <h3 class="text-golden mb-4"><i class="fas fa-info-circle me-2"></i>Booking Details</h3>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-hashtag text-golden me-2"></i>
+                            <strong>Booking Reference:</strong>
+                            <span th:text="${booking.bookingReference}" class="ms-2">REF123</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-bed text-golden me-2"></i>
+                            <strong>Room Type:</strong>
+                            <span th:text="${booking.roomType}" class="ms-2">Deluxe Room</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-user text-golden me-2"></i>
+                            <strong>Guest Name:</strong>
+                            <span th:text="${booking.customerName}" class="ms-2">John Doe</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-users text-golden me-2"></i>
+                            <strong>Guests:</strong>
+                            <span th:text="${booking.numberOfGuests}" class="ms-2">2</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-calendar-check text-golden me-2"></i>
+                            <strong>Check-in:</strong>
+                            <span th:text="${#temporals.format(booking.checkInDate, 'MMM dd, yyyy')}" class="ms-2">Jan 15, 2025</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <i class="fas fa-calendar-times text-golden me-2"></i>
+                            <strong>Check-out:</strong>
+                            <span th:text="${#temporals.format(booking.checkOutDate, 'MMM dd, yyyy')}" class="ms-2">Jan 17, 2025</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="total-amount-box mt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-money-bill-wave text-golden me-2"></i>Total Amount Paid:</h4>
+                        <h3 class="mb-0 text-golden">LKR <span th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 2)}">5,000.00</span></h3>
+                    </div>
+                </div>
+
+                <div class="alert alert-success mt-4">
+                    <i class="fas fa-envelope-circle-check me-2"></i>
+                    <strong>Confirmation Email Sent!</strong> A confirmation email with all booking details has been sent to your registered email address.
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>What's Next?</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>You will receive a confirmation email shortly</li>
+                        <li>Check-in time is 2:00 PM</li>
+                        <li>Please bring a valid ID for check-in</li>
+                        <li>Contact us at +94 11 1234567 for any queries</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-warning shadow-glow mt-4">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${errorMessage}">Error message</span>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow-glow mt-4">
+            <div class="card-header text-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-bolt text-golden me-3"></i>
+                    Quick Actions
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="/my-bookings" class="btn btn-primary w-100 py-3">
+                            <i class="fas fa-calendar-check me-2"></i>View My Bookings
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/rooms" class="btn btn-secondary w-100 py-3">
+                            <i class="fas fa-bed me-2"></i>Book Another Room
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/dashboard" class="btn btn-outline-primary w-100 py-3">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:fragment="additional-css">
+    <style>
+        .success-icon-large {
+            font-size: 5rem;
+            color: #ffd700;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .success-icon-large i {
+            filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.4));
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .info-item {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .info-item strong {
+            color: #333;
+        }
+
+        .info-item span {
+            color: #555;
+        }
+
+        .total-amount-box {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+        }
+
+        .total-amount-box h4 {
+            color: #333;
+        }
+    </style>
+</th:block>
+</body>
+</html>

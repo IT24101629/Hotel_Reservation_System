@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>AI Booking Assistant - Golden Palm Hotel</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Golden Palm Hotel Design System */
+            --bg-primary: #0a0e17;
+            --bg-secondary: #13182a;
+            --bg-card: rgba(30, 41, 59, 0.6);
+            --bg-card-hover: rgba(30, 41, 59, 0.8);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-primary: rgba(255, 215, 0, 0.2);
+            --accent-primary: #ffd700;
+            --accent-secondary: #ffed4e;
+            --gradient-primary: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            --gradient-secondary: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            --gradient-dark: linear-gradient(135deg, #0a0e17 0%, #1e293b 100%);
+            --gradient-card: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.3);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+        }
+
+        body {
+            background: var(--gradient-dark);
+            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient-card);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-primary);
+            box-shadow: var(--shadow-xl);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-actions a {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-actions .btn-outline-primary {
+            color: var(--text-secondary);
+            border-color: var(--border-primary);
+        }
+
+        .nav-actions .btn-outline-primary:hover {
+            border-color: var(--accent-primary);
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .nav-actions .btn-primary {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            font-weight: 700;
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+
+        .nav-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .chat-container {
+            background: var(--gradient-card);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--border-primary);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .chat-header {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .chat-header p {
+            margin: 1rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 2rem;
+            background: var(--bg-card);
+        }
+
+        .message {
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .message-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .user-message .message-content {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .bot-message .message-avatar {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+        }
+
+        .user-message .message-avatar {
+            background: var(--gradient-secondary);
+            color: var(--bg-primary);
+        }
+
+        .user-message .message-avatar::before {
+            content: "👤";
+            font-size: 1.125rem;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius-2xl);
+            word-wrap: break-word;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .bot-message .message-bubble {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-primary);
+            border-bottom-left-radius: 8px;
+        }
+
+        .user-message .message-bubble {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            border-bottom-right-radius: 8px;
+            border: 2px solid var(--accent-primary);
+        }
+
+        .message-bubble p {
+            margin: 0;
+            line-height: 1.6;
+            color: inherit;
+        }
+
+        .message-bubble p:not(:last-child) {
+            margin-bottom: 1rem;
+        }
+
+        /* Typing Indicator */
+        .typing-dots {
+            display: flex;
+            gap: 6px;
+            padding: 1rem 0;
+        }
+
+        .typing-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { 
+                transform: scale(0.8); 
+                opacity: 0.5; 
+            }
+            40% { 
+                transform: scale(1.2); 
+                opacity: 1; 
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Chat Input Area */
+        .chat-input-area {
+            padding: 2rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-full);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .input-group:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
+        }
+
+        #chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            outline: none;
+        }
+
+        #chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        #send-button {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50%;
+            color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            margin-left: 0.5rem;
+        }
+
+        #send-button:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+        }
+
+        #send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .quick-action {
+            background: var(--bg-card);
+            border: 2px solid var(--border-primary);
+            color: var(--text-primary);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .quick-action:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-card-hover);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Room Cards */
+        .room-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .room-card:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .room-card.selected {
+            border-color: var(--accent-primary);
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .room-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin: 0.5rem 0;
+        }
+
+        .select-room-btn {
+            background: var(--gradient-primary);
+            border: none;
+            color: var(--bg-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .select-room-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .booking-form {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+
+        .help-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Sidebar Panels */
+        .sidebar-panel {
+            background: var(--gradient-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-panel:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-xl), 0 0 30px rgba(255, 215, 0, 0.15);
+        }
+
+        .panel-header {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            padding: 1.5rem;
+            font-weight: 700;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+        }
+
+        /* Form Controls */
+        .form-control {
+            background: var(--bg-card);
+            border: 2px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
+            background: var(--bg-card-hover);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn-success {
+            background: var(--gradient-primary);
+            border: none;
+            color: var(--bg-primary);
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--bg-card-hover);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+            opacity: 0.7;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .nav-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .main-container {
+                padding: 0 0.5rem;
+            }
+            
+            .chat-header {
+                padding: 1.5rem;
+            }
+            
+            .chat-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .chat-messages {
+                height: 400px;
+                padding: 1.5rem;
+            }
+            
+            .chat-input-area {
+                padding: 1.5rem;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .col-lg-8, .col-lg-4 {
+                margin-bottom: 1rem;
+            }
+            
+            .message-bubble {
+                max-width: 85%;
+                padding: 1rem 1.25rem;
+            }
+            
+            .panel-header,
+            .panel-body {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .chat-messages {
+                height: 350px;
+                padding: 1rem;
+            }
+            
+            .chat-input-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="/" class="logo">
+                <i class="fas fa-crown"></i>
+                Golden Palm Hotel
+            </a>
+            <div class="nav-actions">
+                <a href="/" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-2"></i>Home
+                </a>
+                <a href="/rooms" class="btn btn-outline-primary">
+                    <i class="fas fa-bed me-2"></i>Rooms
+                </a>
+                <a href="/auth/login" class="btn btn-primary">
+                    <i class="fas fa-user me-2"></i>Login
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="row">
+            <!-- Chat Interface -->
+            <div class="col-lg-8">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h1><i class="fas fa-robot me-3"></i>AI Booking Assistant</h1>
+                        <p>Get instant help with room bookings, availability, and hotel information from <strong>Golden Palm Hotel</strong></p>
+                    </div>
+                    
+                    <!-- Chat Messages -->
+                    <div id="chat-messages" class="chat-messages">
+                        <!-- Welcome message -->
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <div class="message-avatar">🤖</div>
+                                <div class="message-bubble">
+                                    <p sec:authorize="isAuthenticated()">Hello, <span sec:authentication="name">User</span>! 🏨 Welcome back to <strong>Golden Palm Hotel</strong>! I'm your AI booking assistant, here to help you with your bookings and room inquiries. How can I assist you today?</p>
+                                    <p sec:authorize="isAnonymous()">Hello! 🏨 Welcome to <strong>Golden Palm Hotel</strong>! I'm your AI booking assistant, here to help you find the perfect room for your stay. How can I assist you today?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Typing Indicator -->
+                    <div id="typing-indicator" class="message bot-message" style="display: none;">
+                        <div class="message-content">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-bubble">
+                                <div class="typing-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input-area">
+                        <div class="input-group">
+                            <input type="text" id="chat-input" class="form-control" 
+                                   placeholder="Type your message here..." 
+                                   autocomplete="off">
+                            <button class="btn btn-primary" id="send-button">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                        
+                        <!-- Quick Action Buttons -->
+                        <div class="quick-actions">
+                            <button class="btn quick-action" data-message="I want to book a room">
+                                <i class="fas fa-bed me-2"></i>Book Room
+                            </button>
+                            <button class="btn quick-action" data-message="Show me available rooms">
+                                <i class="fas fa-calendar-check me-2"></i>Check Availability
+                            </button>
+                            <button class="btn quick-action" data-message="What are your room types and prices?">
+                                <i class="fas fa-tags me-2"></i>Room Prices
+                            </button>
+                            <button class="btn quick-action" data-message="What amenities do you offer?">
+                                <i class="fas fa-star me-2"></i>Amenities
+                            </button>
+                            <!-- Additional buttons for authenticated users -->
+                            <th:block sec:authorize="isAuthenticated()">
+                                <button class="btn quick-action" data-message="Show me my recent bookings">
+                                    <i class="fas fa-clipboard-list me-2"></i>My Bookings
+                                </button>
+                                <button class="btn quick-action" data-message="I need help with my existing booking">
+                                    <i class="fas fa-tools me-2"></i>Booking Help
+                                </button>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Room Suggestions -->
+                <div id="room-suggestions-panel" class="sidebar-panel" style="display: none;">
+                    <div class="panel-header">
+                        <h5 class="mb-0"><i class="fas fa-bed me-2"></i>Available Rooms</h5>
+                    </div>
+                    <div class="panel-body">
+                        <div id="room-suggestions">
+                            <!-- Room suggestions will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking Form -->
+                <div id="booking-form-panel" class="sidebar-panel" style="display: none;">
+                    <div class="panel-header">
+                        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Complete Booking</h5>
+                    </div>
+                    <div class="panel-body">
+                        <form id="booking-form" class="booking-form">
+                            <div class="mb-3">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="customer-name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="customer-email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" id="customer-phone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Special Requests</label>
+                                <textarea class="form-control" id="special-requests" rows="3" 
+                                          placeholder="Any special requirements or preferences..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Booking
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Help Panel -->
+                <div class="sidebar-panel">
+                    <div class="panel-header">
+                        <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
+                    </div>
+                    <div class="panel-body">
+                        <p class="text-muted">I can help you with:</p>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-calendar-check text-warning me-2"></i>
+                                <span>Check room availability</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-info-circle text-warning me-2"></i>
+                                <span>Get room details and pricing</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-bookmark text-warning me-2"></i>
+                                <span>Make reservations</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-comments text-warning me-2"></i>
+                                <span>Answer hotel questions</span>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="text-center p-3" style="background: rgba(255, 215, 0, 0.1); border: 2px solid var(--accent-primary); border-radius: var(--radius-lg);">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="fas fa-phone-alt text-warning me-2"></i>
+                                <strong>Need immediate help?</strong>
+                            </div>
+                            <a href="tel:0114545678" class="btn btn-warning fw-bold">
+                                <i class="fas fa-phone me-2"></i>011-4545678
+                            </a>
+                        </div>
+                        
+                        <!-- Quick navigation for authenticated users -->
+                        <th:block sec:authorize="isAuthenticated()">
+                            <hr>
+                            <div class="text-center">
+                                <strong><i class="fas fa-link me-2"></i>Quick Links</strong><br>
+                                <div class="d-grid gap-2 mt-2">
+                                    <a href="/dashboard" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                    </a>
+                                    <a href="/my-bookings" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-clipboard-list me-2"></i>My Bookings
+                                    </a>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        class HotelChatbot {
+            constructor() {
+                this.sessionId = null;
+                this.selectedRoomId = null;
+                this.currentBookingIntent = {};
+                this.isWaitingForResponse = false;
+                
+                this.initializeElements();
+                this.attachEventListeners();
+                
+                console.log('🤖 Hotel Chatbot initialized');
+            }
+            
+            initializeElements() {
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatInput = document.getElementById('chat-input');
+                this.sendButton = document.getElementById('send-button');
+                this.typingIndicator = document.getElementById('typing-indicator');
+                
+                // Panels
+                this.roomSuggestionsPanel = document.getElementById('room-suggestions-panel');
+                this.bookingFormPanel = document.getElementById('booking-form-panel');
+                
+                // Form elements
+                this.bookingForm = document.getElementById('booking-form');
+                this.customerName = document.getElementById('customer-name');
+                this.customerEmail = document.getElementById('customer-email');
+                this.customerPhone = document.getElementById('customer-phone');
+                this.specialRequests = document.getElementById('special-requests');
+            }
+            
+            attachEventListeners() {
+                // Send message on button click
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                
+                // Send message on Enter key
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                
+                // Quick action buttons
+                document.querySelectorAll('.quick-action').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const message = button.getAttribute('data-message');
+                        this.chatInput.value = message;
+                        this.sendMessage();
+                    });
+                });
+                
+                // Booking form submission
+                if (this.bookingForm) {
+                    this.bookingForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.completeBooking();
+                    });
+                }
+            }
+            
+            async sendMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message || this.isWaitingForResponse) return;
+                
+                // Clear input and show user message
+                this.chatInput.value = '';
+                this.addMessage(message, 'user');
+                
+                // Show typing indicator
+                this.showTypingIndicator();
+                this.isWaitingForResponse = true;
+                
+                try {
+                    // For now, provide fallback responses since Python service might not be running
+                    const response = await this.getFallbackResponse(message);
+                    
+                    // Add bot response
+                    this.addMessage(response.response, 'bot');
+                    
+                    // Handle room suggestions if any
+                    if (response.suggestedRooms && response.suggestedRooms.length > 0) {
+                        this.showRoomSuggestions(response.suggestedRooms);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    this.addMessage(
+                        'I apologize, but I\'m experiencing technical difficulties. 😔\n\n' +
+                        'For immediate assistance, please call our hotline: **011-4545678**', 
+                        'bot'
+                    );
+                } finally {
+                    this.hideTypingIndicator();
+                    this.isWaitingForResponse = false;
+                }
+            }
+            
+            async getFallbackResponse(message) {
+                // Provide intelligent fallback responses
+                const messageLower = message.toLowerCase();
+                
+                console.log('🔄 getFallbackResponse called with:', message);
+                
+                // HIGHEST PRIORITY: Check for complete booking inquiry with dates and guests FIRST
+                console.log('🔍 Checking if message contains complete booking details...');
+                if (this.containsBookingDetails(message)) {
+                    console.log('✅ COMPLETE BOOKING DETECTED! Processing database search...');
+                    
+                    const bookingInfo = this.extractBookingDetails(message);
+                    console.log('📋 Extracted booking info:', bookingInfo);
+                    
+                    // Get rooms from database
+                    console.log('🔍 Searching available rooms in database...');
+                    const rooms = await this.searchAvailableRooms(bookingInfo);
+                    console.log('🏨 Found rooms from database:', rooms);
+                    
+                    return {
+                        response: `Perfect! I found ${rooms.length} available room${rooms.length !== 1 ? 's' : ''} for ${bookingInfo.guests} guest${bookingInfo.guests > 1 ? 's' : ''} from ${bookingInfo.checkIn} to ${bookingInfo.checkOut}. Here are your options:`,
+                        suggestedRooms: rooms
+                    };
+                }
+                
+                if (messageLower.includes('hello') || messageLower.includes('hi')) {
+                    console.log('👋 Greeting detected');
+                    return {
+                        response: "Hello! 🏨 How can I help you with your hotel booking today? I can check availability, show room types, or help you make a reservation.",
+                        suggestedRooms: null
+                    };
+                }
+                
+                // Check for room information queries FIRST (more specific)
+                if (messageLower.includes('price') || messageLower.includes('cost') || messageLower.includes('room type') || messageLower.includes('room types')) {
+                    console.log('💰 Room pricing/types question detected');
+                    return {
+                        response: "Here are our room types and prices:\n\n🛏️ **Standard Single** - LKR 8,500/night (1 guest)\n🛏️ **Standard Double** - LKR 12,000/night (2 guests)\n🏨 **Deluxe Room** - LKR 18,000/night (3 guests)\n👨‍👩‍👧‍👦 **Family Suite** - LKR 25,000/night (4 guests)\n  • Perfect for families with children\n  • Extra space and comfort\n  • Family-friendly amenities\n👑 **Presidential Suite** - LKR 45,000/night (6 guests)\n  • Luxury accommodations\n  • Premium amenities including Jacuzzi\n  • VIP treatment\n\nAll rooms include WiFi, AC, TV, and private bathroom. Would you like to check availability for specific dates?",
+                        suggestedRooms: null
+                    };
+                }
+                
+                // Check for Family Suite specific questions
+                if (messageLower.includes('family suite') || (messageLower.includes('family') && messageLower.includes('room'))) {
+                    console.log('👨‍👩‍👧‍👦 Family Suite question detected');
+                    return {
+                        response: "**Family Suite Details:**\n\n🏨 **Price:** LKR 25,000 per night\n👨‍👩‍👧‍👦 **Capacity:** Up to 4 guests\n📏 **Space:** Extra spacious family room\n\n**Included Amenities:**\n• Free WiFi 📶\n• Air Conditioning ❄️\n• LED TV 📺\n• Private Bathroom 🚿\n• Mini Fridge 🧊\n• Balcony 🌅\n• Room Service 🛎️\n• Family-friendly setup\n\n**Perfect for:**\n• Families with children\n• Groups needing extra space\n• Extended stays\n\nWould you like to check availability for specific dates?",
+                        suggestedRooms: null
+                    };
+                }
+                
+                // Generic booking inquiry (less specific, comes last)
+                if ((messageLower.includes('book') || messageLower.includes('availability')) && !messageLower.includes('room type') && !messageLower.includes('price')) {
+                    console.log('📝 Generic booking inquiry detected');
+                    return {
+                        response: "I'd love to help you book a room! 🛏️ To find the perfect accommodation, I'll need:\n\n• Check-in date\n• Check-out date\n• Number of guests\n\nCould you please provide these details? For example: 'I need a room from December 25 to 27 for 2 guests'",
+                        suggestedRooms: null
+                    };
+                }
+                
+                if (messageLower.includes('amenities') || messageLower.includes('facilities')) {
+                    console.log('✨ Amenities question detected');
+                    return {
+                        response: "Our hotel offers excellent amenities:\n\n**All Rooms Include:**\n• Free WiFi 📶\n• Air Conditioning ❄️\n• LED TV 📺\n• Private Bathroom 🚿\n\n**Premium Rooms Also Feature:**\n• Mini Fridge 🧊\n• Balcony 🌅\n• Room Service 🛎️\n• Jacuzzi (Presidential Suite) 🛁\n\n**Hotel Facilities:**\n• 24/7 Reception\n• Restaurant\n• Parking\n• Laundry Service\n\nWhat type of room interests you most?",
+                        suggestedRooms: null
+                    };
+                }
+                
+                // Handle authenticated user queries
+                if (messageLower.includes('my recent bookings') || messageLower.includes('my bookings')) {
+                    console.log('📋 User bookings query detected');
+                    return {
+                        response: "I'd be happy to help you with your bookings! 📋\n\nTo view your booking history and manage your reservations, please visit your [My Bookings](/my-bookings) page where you can:\n\n• View all your current and past bookings\n• Check booking status and details\n• Modify or cancel bookings (if allowed)\n• Download booking confirmations\n\nIs there anything specific about your bookings you'd like help with?",
+                        suggestedRooms: null
+                    };
+                }
+                
+                if (messageLower.includes('existing booking') || messageLower.includes('booking help')) {
+                    console.log('🔧 Booking help query detected');
+                    return {
+                        response: "I'm here to help with your existing booking! 🔧\n\nI can assist you with:\n\n• **Check-in/Check-out questions**\n• **Room details and amenities**\n• **Booking modifications** (subject to availability)\n• **Special requests** (extra pillows, late checkout, etc.)\n• **Payment inquiries**\n• **Cancellation policies**\n\nPlease provide your booking reference number or tell me what specific help you need, and I'll do my best to assist you!",
+                        suggestedRooms: null
+                    };
+                }
+                
+                if (messageLower.includes('dashboard') || messageLower.includes('go back') || messageLower.includes('navigation')) {
+                    console.log('🏠 Dashboard/navigation query detected');
+                    return {
+                        response: "Need to navigate around? 🏠\n\n**Quick Links:**\n• [Dashboard](/dashboard) - Your main control panel\n• [My Bookings](/my-bookings) - View and manage reservations\n• [Profile](/profile) - Update your information\n• [Browse Rooms](/rooms) - Explore available accommodations\n\nYou can also use the navigation menu at the top of the page. Is there a specific page you're looking for?",
+                        suggestedRooms: null
+                    };
+                }
+                
+                // Out of scope responses
+                if (messageLower.includes('weather') || messageLower.includes('restaurant') || messageLower.includes('flight')) {
+                    return {
+                        response: "I apologize, but I can only assist with hotel booking and room-related inquiries. 😔\n\nFor other matters, our customer care team will contact you soon, or you can call our hotline immediately: **011-4545678**\n\nIs there anything about our hotel rooms or booking process I can help you with?",
+                        suggestedRooms: null
+                    };
+                }
+                
+                // Default response
+                return {
+                    response: "I'm here to help with your hotel booking! 🏨 I can:\n\n• Check room availability\n• Show room types and prices\n• Help you make a reservation\n• Answer questions about amenities\n\nWhat would you like to know about our hotel?",
+                    suggestedRooms: null
+                };
+            }
+            
+            containsBookingDetails(message) {
+                const messageLower = message.toLowerCase();
+                
+                console.log('🔍 Raw message for analysis:', message);
+                
+                // Multiple date patterns to catch various formats
+                const datePatterns = [
+                    /\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}/i,
+                    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{1,2}/i,
+                    /\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/,  // DD/MM/YYYY or DD-MM-YYYY
+                    /\d{1,2}\s+(st|nd|rd|th)/i,
+                    /(december|dec)\s+\d{1,2}/i,
+                    /from\s+(\w+)\s+(\d+)\s+to\s+(\d+)/i,  // "from December 25 to 27"
+                    /from\s+(\w+)\s+(\d+)\s+to\s+(\w+)\s+(\d+)/i,  // "from December 25 to December 27"
+                    /check\s+in.*\d{1,2}\/\d{1,2}\/\d{4}/i,  // "check in 25/12/2025"
+                    /\d{1,2}\/\d{1,2}\/\d{4}.*check\s+in/i,  // "23/12/2025 as check in"
+                    /availability.*\d{1,2}\/\d{1,2}\/\d{4}/i,  // "availability 23/12/2025"
+                    /\b\d{1,2}\/\d{1,2}\/\d{4}\b/  // Any DD/MM/YYYY format
+                ];
+                
+                let hasDate = false;
+                for (let i = 0; i < datePatterns.length; i++) {
+                    if (datePatterns[i].test(message)) {
+                        console.log(`✅ Date pattern ${i} matched:`, datePatterns[i]);
+                        hasDate = true;
+                        break;
+                    }
+                }
+                
+                // Multiple guest patterns
+                const guestPatterns = [
+                    /\b\d+\s*(guest|guests)\b/i,
+                    /\b\d+\s*(people|person|persons)\b/i,
+                    /for\s+\d+\s*(guest|people|person|member|members)/i,
+                    /\b\d+\s*(member|members)\b/i  // "4 members"
+                ];
+                
+                let hasGuests = false;
+                for (let i = 0; i < guestPatterns.length; i++) {
+                    if (guestPatterns[i].test(message)) {
+                        console.log(`✅ Guest pattern ${i} matched:`, guestPatterns[i]);
+                        hasGuests = true;
+                        break;
+                    }
+                }
+                
+                // Check for booking intent keywords
+                const bookingIntentPattern = /(need|want|book|reserve|room|stay|from.*to|availability|available|check)/i;
+                const hasBookingIntent = bookingIntentPattern.test(message);
+                if (hasBookingIntent) {
+                    console.log('✅ Booking intent matched:', bookingIntentPattern);
+                }
+                
+                const result = hasDate && hasGuests && hasBookingIntent;
+                
+                console.log('🔍 DETAILED booking analysis:', {
+                    message: message,
+                    hasDate: hasDate,
+                    hasGuests: hasGuests,
+                    hasBookingIntent: hasBookingIntent,
+                    FINAL_RESULT: result
+                });
+                
+                return result;
+            }
+            
+            extractBookingDetails(message) {
+                const messageLower = message.toLowerCase();
+                
+                // Extract dates
+                let checkIn = null, checkOut = null;
+                
+                // Look for "from X to Y" pattern - more robust
+                const fromToPatterns = [
+                    /from\s+(december|dec)\s+(\d{1,2})\s+to\s+(\d{1,2})/i,
+                    /from\s+(december|dec)\s+(\d{1,2})\s+to\s+(december|dec)\s+(\d{1,2})/i,
+                    /from\s+(\w+)\s+(\d{1,2})\s+to\s+(\w*)\s*(\d{1,2})/i
+                ];
+                
+                for (const pattern of fromToPatterns) {
+                    const match = message.match(pattern);
+                    if (match) {
+                        if (match.length === 4) {
+                            // Pattern: "from December 25 to 27"
+                            checkIn = `${match[1]} ${match[2]}`;
+                            checkOut = `${match[1]} ${match[3]}`;
+                        } else if (match.length === 5) {
+                            // Pattern: "from December 25 to December 27"
+                            checkIn = `${match[1]} ${match[2]}`;
+                            checkOut = `${match[3]} ${match[4]}`;
+                        }
+                        break;
+                    }
+                }
+                
+                // Look for DD/MM/YYYY patterns specifically
+                if (!checkIn) {
+                    // Extract all DD/MM/YYYY dates
+                    const ddmmyyyyDates = message.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/g);
+                    if (ddmmyyyyDates && ddmmyyyyDates.length >= 1) {
+                        // Look for check-in context
+                        const checkInPatterns = [
+                            /(\d{1,2}\/\d{1,2}\/\d{4}).*check\s+in/i,
+                            /check\s+in.*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                            /availability.*(\d{1,2}\/\d{1,2}\/\d{4})/i
+                        ];
+                        
+                        // Find check-in date
+                        for (const pattern of checkInPatterns) {
+                            const match = message.match(pattern);
+                            if (match) {
+                                checkIn = this.convertDDMMYYYYToReadable(match[1]);
+                                break;
+                            }
+                        }
+                        
+                        // If we found a check-in date, look for check-out or use default
+                        if (checkIn && ddmmyyyyDates.length >= 2) {
+                            // Use the second date as check-out
+                            checkOut = this.convertDDMMYYYYToReadable(ddmmyyyyDates[1]);
+                        } else if (checkIn) {
+                            // Default to 2 days later
+                            checkOut = this.addDaysToDate(checkIn, 2);
+                        }
+                        
+                        // If still no specific check-in found, use first date as check-in
+                        if (!checkIn && ddmmyyyyDates.length >= 1) {
+                            checkIn = this.convertDDMMYYYYToReadable(ddmmyyyyDates[0]);
+                            if (ddmmyyyyDates.length >= 2) {
+                                checkOut = this.convertDDMMYYYYToReadable(ddmmyyyyDates[1]);
+                            } else {
+                                checkOut = this.addDaysToDate(checkIn, 2);
+                            }
+                        }
+                    }
+                }
+                
+                // If no DD/MM/YYYY pattern, look for individual dates (original logic)
+                if (!checkIn) {
+                    const dateMatches = message.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{1,2}|\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}/gi);
+                    if (dateMatches && dateMatches.length >= 2) {
+                        checkIn = dateMatches[0];
+                        checkOut = dateMatches[1];
+                    } else if (dateMatches && dateMatches.length === 1) {
+                        checkIn = dateMatches[0];
+                        checkOut = 'December 27'; // Default
+                    }
+                }
+                
+                // Extract guest count - more patterns
+                const guestPatterns = [
+                    /for\s+(\d+)\s*(guest|guests|people|person|member|members)/i,
+                    /\b(\d+)\s*(guest|guests|people|person|persons|member|members)\b/i
+                ];
+                
+                let guests = 2; // Default
+                for (const pattern of guestPatterns) {
+                    const match = message.match(pattern);
+                    if (match) {
+                        guests = parseInt(match[1]);
+                        break;
+                    }
+                }
+                
+                const result = {
+                    checkIn: checkIn || 'December 25',
+                    checkOut: checkOut || 'December 27',
+                    guests: guests
+                };
+                
+                console.log('📅 Extracted booking details:', result);
+                
+                return result;
+            }
+            
+            async searchAvailableRooms(bookingInfo) {
+                console.log('🔍 searchAvailableRooms called with:', bookingInfo);
+                
+                // Try to call the actual API first
+                try {
+                    // Convert dates to proper format for API call
+                    const checkInDate = this.parseDate(bookingInfo.checkIn);
+                    const checkOutDate = this.parseDate(bookingInfo.checkOut);
+                    
+                    console.log('📅 Parsed dates for API:', { checkInDate, checkOutDate });
+                    
+                    const requestBody = {
+                        checkInDate: checkInDate,
+                        checkOutDate: checkOutDate,
+                        numberOfGuests: bookingInfo.guests
+                    };
+                    
+                    console.log('📡 Sending API request to /api/rooms/available:', requestBody);
+                    
+                    const response = await fetch('/api/rooms/available', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=\"_csrf\"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    console.log('📡 API Response status:', response.status, response.statusText);
+                    
+                    if (response.ok) {
+                        const rooms = await response.json();
+                        console.log('✅ API returned rooms:', rooms);
+                        const formattedRooms = this.formatRoomsForChat(rooms, bookingInfo.guests);
+                        console.log('🏨 Formatted rooms for chat:', formattedRooms);
+                        return formattedRooms;
+                    } else {
+                        console.log('❌ API call failed with status:', response.status);
+                        const errorText = await response.text();
+                        console.log('❌ Error response:', errorText);
+                    }
+                } catch (error) {
+                    console.log('❌ API call failed with exception:', error);
+                }
+                
+                // Fallback to sample rooms based on guest count
+                console.log('⚠️ Using fallback sample rooms');
+                return this.getSampleRooms(bookingInfo.guests);
+            }
+            
+            convertDDMMYYYYToReadable(ddmmyyyy) {
+                // Convert "23/12/2025" to "December 23, 2025"
+                const parts = ddmmyyyy.split('/');
+                const day = parseInt(parts[0]);
+                const month = parseInt(parts[1]);
+                const year = parts[2];
+                
+                const monthNames = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
+                
+                return `${monthNames[month - 1]} ${day}, ${year}`;
+            }
+            
+            addDaysToDate(dateString, days) {
+                // Simple date addition - for production use a proper date library
+                // For now, just return a default
+                if (dateString.includes('December 23')) {
+                    return 'December 25, 2025';
+                }
+                return 'December 27, 2025';
+            }
+
+            parseDate(dateString) {
+                // Simple date parsing - in production, use a proper date library
+                console.log('📅 Parsing date string:', dateString);
+                
+                // Check if it's DD/MM/YYYY format first
+                const ddmmyyyyMatch = dateString.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
+                if (ddmmyyyyMatch) {
+                    const day = ddmmyyyyMatch[1].padStart(2, '0');
+                    const month = ddmmyyyyMatch[2].padStart(2, '0');
+                    const year = ddmmyyyyMatch[3];
+                    console.log('📅 DD/MM/YYYY format detected:', `${year}-${month}-${day}`);
+                    return `${year}-${month}-${day}`;
+                }
+                
+                // Check for "Month DD, YYYY" format
+                if (dateString.includes(',')) {
+                    const parts = dateString.split(',');
+                    if (parts.length >= 2) {
+                        const monthDay = parts[0].trim();
+                        const year = parts[1].trim();
+                        const monthDayMatch = monthDay.match(/(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})/i);
+                        if (monthDayMatch) {
+                            const monthMap = {
+                                'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
+                                'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12
+                            };
+                            const month = monthMap[monthDayMatch[1].toLowerCase()];
+                            const day = parseInt(monthDayMatch[2]);
+                            return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                        }
+                    }
+                }
+                
+                // Original logic for other formats
+                const monthMap = {
+                    'january': 1, 'jan': 1, 'february': 2, 'feb': 2, 'march': 3, 'mar': 3,
+                    'april': 4, 'apr': 4, 'may': 5, 'june': 6, 'jun': 6,
+                    'july': 7, 'jul': 7, 'august': 8, 'aug': 8, 'september': 9, 'sep': 9,
+                    'october': 10, 'oct': 10, 'november': 11, 'nov': 11, 'december': 12, 'dec': 12
+                };
+                
+                const dateStr = dateString.toLowerCase();
+                let month = 12, day = 25, year = 2025; // Default to December 25, 2025
+                
+                // Extract month
+                for (const [monthName, monthNum] of Object.entries(monthMap)) {
+                    if (dateStr.includes(monthName)) {
+                        month = monthNum;
+                        break;
+                    }
+                }
+                
+                // Extract day
+                const dayMatch = dateStr.match(/\d{1,2}/);
+                if (dayMatch) {
+                    day = parseInt(dayMatch[0]);
+                }
+                
+                return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            }
+            
+            formatRoomsForChat(apiRooms, guestCount) {
+                return apiRooms.map(room => {
+                    const pricePerNight = room.pricePerNight || room.price || 12000;
+                    const amenities = room.amenities ? 
+                        (typeof room.amenities === 'string' ? JSON.parse(room.amenities) : room.amenities) : 
+                        ["WiFi", "AC", "TV", "Private Bathroom"];
+                    
+                    return {
+                        room_id: room.roomId || room.id,
+                        room_number: room.roomNumber || room.number,
+                        type_name: room.roomType || room.typeName || room.type,
+                        price_per_night: pricePerNight,
+                        total_cost: pricePerNight * 2, // Assuming 2 nights
+                        max_occupancy: room.maxOccupancy || room.capacity || guestCount,
+                        amenities: amenities
+                    };
+                });
+            }
+            
+            getSampleRooms(guestCount) {
+                const allRooms = [
+                    {
+                        room_id: 101,
+                        room_number: "101",
+                        type_name: "Standard Single",
+                        price_per_night: 8500,
+                        total_cost: 17000,
+                        max_occupancy: 1,
+                        amenities: ["WiFi", "AC", "TV", "Private Bathroom"]
+                    },
+                    {
+                        room_id: 102,
+                        room_number: "102",
+                        type_name: "Standard Double",
+                        price_per_night: 12000,
+                        total_cost: 24000,
+                        max_occupancy: 2,
+                        amenities: ["WiFi", "AC", "TV", "Private Bathroom", "Mini Fridge"]
+                    },
+                    {
+                        room_id: 201,
+                        room_number: "201", 
+                        type_name: "Deluxe Room",
+                        price_per_night: 18000,
+                        total_cost: 36000,
+                        max_occupancy: 3,
+                        amenities: ["WiFi", "AC", "TV", "Private Bathroom", "Mini Fridge", "Balcony"]
+                    },
+                    {
+                        room_id: 203,
+                        room_number: "203", 
+                        type_name: "Family Suite",
+                        price_per_night: 25000,
+                        total_cost: 50000,
+                        max_occupancy: 4,
+                        amenities: ["WiFi", "AC", "TV", "Private Bathroom", "Mini Fridge", "Balcony", "Room Service"]
+                    }
+                ];
+                
+                // Filter rooms that can accommodate the guest count
+                return allRooms.filter(room => room.max_occupancy >= guestCount).slice(0, 3);
+            }
+            
+            addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                
+                const avatar = sender === 'bot' ? '🤖' : '';
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-avatar">${avatar}</div>
+                        <div class="message-bubble">
+                            <p>${this.formatMessage(text)}</p>
+                        </div>
+                    </div>
+                `;
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            formatMessage(text) {
+                // Convert markdown-like formatting
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                text = text.replace(/\n/g, '<br>');
+                return text;
+            }
+            
+            showTypingIndicator() {
+                this.typingIndicator.style.display = 'block';
+                this.scrollToBottom();
+            }
+            
+            hideTypingIndicator() {
+                this.typingIndicator.style.display = 'none';
+            }
+            
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100);
+            }
+            
+            showRoomSuggestions(rooms) {
+                let suggestionsHTML = '';
+                
+                rooms.forEach((room, index) => {
+                    const amenities = room.amenities ? room.amenities.slice(0, 3).join(', ') : 'Basic amenities';
+                    
+                    suggestionsHTML += `
+                        <div class="room-card" data-room-id="${room.room_id}">
+                            <h6><strong>${room.type_name} - Room ${room.room_number}</strong></h6>
+                            <div class="room-price">LKR ${room.price_per_night.toLocaleString()}/night</div>
+                            <div class="text-muted">Total: LKR ${room.total_cost.toLocaleString()}</div>
+                            <div class="mt-2">
+                                <small>👥 Up to ${room.max_occupancy} guests</small><br>
+                                <small>✨ ${amenities}</small>
+                            </div>
+                            <button class="btn select-room-btn mt-2" data-room-id="${room.room_id}">
+                                Select This Room
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('room-suggestions').innerHTML = suggestionsHTML;
+                this.roomSuggestionsPanel.style.display = 'block';
+                
+                // Add click listeners to select room buttons
+                document.querySelectorAll('.select-room-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const roomId = parseInt(e.target.getAttribute('data-room-id'));
+                        this.selectRoom(roomId);
+                    });
+                });
+            }
+            
+            selectRoom(roomId) {
+                this.selectedRoomId = roomId;
+                
+                // Visual feedback
+                document.querySelectorAll('.room-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelector(`[data-room-id="${roomId}"]`).classList.add('selected');
+                
+                // Show booking form
+                this.showBookingForm();
+                
+                // Add confirmation message
+                this.addMessage('Perfect! I\'ve selected that room for you. Please provide your details to complete the booking.', 'bot');
+            }
+            
+            showBookingForm() {
+                this.bookingFormPanel.style.display = 'block';
+                
+                // Scroll to booking form
+                setTimeout(() => {
+                    this.bookingFormPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            }
+            
+            async completeBooking() {
+                if (!this.selectedRoomId) {
+                    alert('Please select a room first.');
+                    return;
+                }
+                
+                const customerDetails = {
+                    name: this.customerName.value,
+                    email: this.customerEmail.value,
+                    phone: this.customerPhone.value,
+                    specialRequests: this.specialRequests.value
+                };
+                
+                // Simulate booking completion
+                this.addMessage(
+                    `🎉 Thank you for your booking request!\n\n` +
+                    `**Customer:** ${customerDetails.name}\n` +
+                    `**Email:** ${customerDetails.email}\n` +
+                    `**Phone:** ${customerDetails.phone}\n\n` +
+                    `To complete your booking, please:\n` +
+                    `1. **Call our hotline: 011-4545678**\n` +
+                    `2. **Or visit our hotel in person**\n` +
+                    `3. **Or register/login to book online**\n\n` +
+                    `Our staff will be happy to assist you with the final booking process!`,
+                    'bot'
+                );
+                
+                // Hide booking panels
+                this.bookingFormPanel.style.display = 'none';
+                this.roomSuggestionsPanel.style.display = 'none';
+            }
+        }
+        
+        // Initialize chatbot when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.hotelChatbot = new HotelChatbot();
+        });
+        
+        console.log('🤖 Hotel Booking Chatbot loaded');
+    </script>
+</body>
+</html>

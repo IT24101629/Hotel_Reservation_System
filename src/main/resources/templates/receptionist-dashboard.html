@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Receptionist Dashboard - Golden Palm Hotel</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container-fluid py-4 px-4">
+        <!-- QR Scanner Section -->
+        <section class="mb-4">
+            <div class="card shadow-glow">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-qrcode text-golden me-3"></i>
+                        QR Code Scanner
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="qr-scanner-container" class="position-relative">
+                                <video id="qr-video" width="100%" height="300" style="border: 2px solid #d4af37; border-radius: 12px; background: #f8f9fa;"></video>
+                                <div id="qr-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #d4af37; font-size: 18px; display: none;">
+                                    <i class="fas fa-camera me-2"></i>Position QR code in front of camera
+                                </div>
+                            </div>
+                            <div class="mt-3 d-flex gap-2">
+                                <button id="start-scanner" class="btn btn-success">
+                                    <i class="fas fa-video me-2"></i>Start Camera
+                                </button>
+                                <button id="stop-scanner" class="btn btn-danger" style="display: none;">
+                                    <i class="fas fa-stop-circle me-2"></i>Stop Camera
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="scanner-info">
+                                <h4 class="text-golden mb-3"><i class="fas fa-info-circle me-2"></i>Scanner Instructions</h4>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-check text-golden me-2"></i>Click "Start Camera" to begin</li>
+                                    <li class="mb-2"><i class="fas fa-check text-golden me-2"></i>Allow camera permission when prompted</li>
+                                    <li class="mb-2"><i class="fas fa-check text-golden me-2"></i>Position QR code in front of camera</li>
+                                    <li class="mb-2"><i class="fas fa-check text-golden me-2"></i>Wait for automatic detection</li>
+                                    <li class="mb-2"><i class="fas fa-check text-golden me-2"></i>Booking details will load automatically</li>
+                                </ul>
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Note:</strong> Camera access works best on HTTPS or localhost. If camera doesn't work, use manual search below.
+                                </div>
+                                <div id="scan-result" class="mt-3" style="display: none;">
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>QR Code Detected!</strong>
+                                        <p id="scan-result-text" class="mb-0 mt-2"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Manual Booking Search -->
+        <section class="mb-4">
+            <div class="card shadow-glow">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-search text-golden me-3"></i>
+                        Manual Booking Search
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="booking-id-input" class="form-label">
+                                    <i class="fas fa-hashtag text-golden me-2"></i>Enter Booking ID or Reference:
+                                </label>
+                                <input type="text" id="booking-id-input" class="form-control" placeholder="Enter booking ID (13) or reference (BK3983948126)">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-flex gap-2">
+                                    <button id="search-booking" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i>Search Booking
+                                    </button>
+                                    <button id="clear-search" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Booking Details Section -->
+        <section id="booking-details" class="mb-4" style="display: none;">
+            <div class="card shadow-glow">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-clipboard-list text-golden me-3"></i>
+                        Booking Details
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="booking-info">
+                        <!-- Booking details will be populated here -->
+                    </div>
+
+                    <!-- Update Form Section -->
+                    <div id="update-form" class="mt-4" style="display: none;">
+                        <hr>
+                        <h4 class="text-golden mb-3"><i class="fas fa-edit me-2"></i>Update Booking</h4>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="update-checkin" class="form-label">
+                                    <i class="fas fa-calendar-check text-golden me-2"></i>Check-in Date
+                                </label>
+                                <input type="date" id="update-checkin" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="update-checkout" class="form-label">
+                                    <i class="fas fa-calendar-times text-golden me-2"></i>Check-out Date
+                                </label>
+                                <input type="date" id="update-checkout" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="update-status" class="form-label">
+                                    <i class="fas fa-info-circle text-golden me-2"></i>Booking Status
+                                </label>
+                                <select id="update-status" class="form-control">
+                                    <option value="PENDING">Pending</option>
+                                    <option value="CONFIRMED">Confirmed</option>
+                                    <option value="CHECKED_IN">Checked In</option>
+                                    <option value="CHECKED_OUT">Checked Out</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button id="save-updates" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Save Updates
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="booking-actions mt-4 d-flex gap-2 flex-wrap">
+                        <button id="checkin-btn" class="btn btn-success" style="display: none;">
+                            <i class="fas fa-sign-in-alt me-2"></i>Check In Guest
+                        </button>
+                        <button id="checkout-btn" class="btn btn-warning" style="display: none;">
+                            <i class="fas fa-sign-out-alt me-2"></i>Check Out Guest
+                        </button>
+                        <button id="edit-booking-btn" class="btn btn-primary" style="display: none;">
+                            <i class="fas fa-edit me-2"></i>Edit Booking
+                        </button>
+                        <div id="action-result" class="mt-2 w-100"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="mb-3">
+            <div class="card shadow-glow">
+                <div class="card-header text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-bolt text-golden me-3"></i>
+                        Quick Actions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="/dashboard" class="btn btn-secondary w-100 py-3">
+                                <i class="fas fa-home me-2"></i>Back to Main Dashboard
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="/auth/logout" class="btn btn-outline-danger w-100 py-3">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Additional JavaScript -->
+<th:block th:fragment="additional-js">
+    <script src="https://unpkg.com/@zxing/library@latest/umd/index.js"></script>
+    <script>
+        let codeReader;
+        let currentBookingId = null;
+        let currentBookingData = null;
+
+        // QR Scanner functionality
+        const video = document.getElementById('qr-video');
+        const startBtn = document.getElementById('start-scanner');
+        const stopBtn = document.getElementById('stop-scanner');
+        const scanResult = document.getElementById('scan-result');
+        const scanResultText = document.getElementById('scan-result-text');
+
+        startBtn.addEventListener('click', startScanner);
+        stopBtn.addEventListener('click', stopScanner);
+
+        async function startScanner() {
+            console.log('Starting QR scanner...');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                stream.getTracks().forEach(track => track.stop());
+
+                codeReader = new ZXing.BrowserQRCodeReader();
+
+                const videoInputDevices = await codeReader.listVideoInputDevices();
+                console.log('Available cameras:', videoInputDevices.length);
+
+                if (videoInputDevices.length === 0) {
+                    alert('No cameras found. Please ensure camera permission is granted and camera is connected.');
+                    return;
+                }
+
+                const selectedDeviceId = videoInputDevices[0].deviceId;
+
+                await codeReader.decodeFromVideoDevice(selectedDeviceId, 'qr-video', (result, err) => {
+                    if (result) {
+                        console.log('QR Code detected:', result.text);
+
+                        const bookingId = extractBookingIdFromQR(result.text);
+                        if (bookingId) {
+                            scanResultText.textContent = `Booking Found: ${bookingId}`;
+                            scanResult.style.display = 'block';
+
+                            searchBookingById(bookingId);
+                        } else {
+                            alert('Invalid QR code format. Please scan a booking QR code.');
+                        }
+                    }
+
+                    if (err && !(err instanceof ZXing.NotFoundException)) {
+                        console.error('QR Scanner error:', err);
+                    }
+                });
+
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+                console.log('QR Scanner started successfully');
+
+            } catch (err) {
+                console.error('Camera access error:', err);
+                let errorMsg = 'Could not access camera. ';
+
+                if (err.name === 'NotAllowedError') {
+                    errorMsg += 'Please allow camera access and try again.';
+                } else if (err.name === 'NotFoundError') {
+                    errorMsg += 'No camera found. Please connect a camera.';
+                } else if (err.name === 'NotSupportedError') {
+                    errorMsg += 'Camera not supported on this device.';
+                } else {
+                    errorMsg += 'Please try manual search instead.';
+                }
+
+                alert(errorMsg);
+            }
+        }
+
+        function stopScanner() {
+            if (codeReader) {
+                codeReader.reset();
+                console.log('QR Scanner stopped');
+            }
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+        }
+
+        function extractBookingIdFromQR(qrText) {
+            const match = qrText.match(/booking[:\s]*(\d+)|id[:\s]*(\d+)|BK(\d+)/i);
+            return match ? (match[1] || match[2] || match[3]) : null;
+        }
+
+        // Manual search functionality
+        document.getElementById('search-booking').addEventListener('click', () => {
+            const input = document.getElementById('booking-id-input').value.trim();
+            if (input) {
+                searchBookingById(input);
+            } else {
+                alert('Please enter a booking ID or reference');
+            }
+        });
+
+        document.getElementById('clear-search').addEventListener('click', () => {
+            document.getElementById('booking-id-input').value = '';
+            document.getElementById('booking-details').style.display = 'none';
+            currentBookingId = null;
+            currentBookingData = null;
+        });
+
+        function searchBookingById(bookingIdOrRef) {
+            console.log('Searching for booking:', bookingIdOrRef);
+
+            fetch(`/receptionist/booking/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                },
+                body: `bookingId=${encodeURIComponent(bookingIdOrRef)}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentBookingData = data.booking;
+                        currentBookingId = data.booking.bookingId;
+                        displayBookingDetails(data.booking);
+                    } else {
+                        alert(data.error || 'Booking not found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Booking not found. Please check the booking ID/reference and try again.');
+                });
+        }
+
+        function displayBookingDetails(booking) {
+            const bookingInfo = document.getElementById('booking-info');
+            const bookingDetails = document.getElementById('booking-details');
+
+            bookingInfo.innerHTML = `
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-hashtag text-golden me-2"></i>
+                        <strong>Booking Reference:</strong> ${booking.bookingReference}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-user text-golden me-2"></i>
+                        <strong>Guest Name:</strong> ${booking.customerName}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-bed text-golden me-2"></i>
+                        <strong>Room:</strong> ${booking.roomNumber} (${booking.roomType})
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-users text-golden me-2"></i>
+                        <strong>Guests:</strong> ${booking.numberOfGuests}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-calendar-check text-golden me-2"></i>
+                        <strong>Check-in:</strong> ${formatDate(booking.checkInDate)}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-calendar-times text-golden me-2"></i>
+                        <strong>Check-out:</strong> ${formatDate(booking.checkOutDate)}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-info-circle text-golden me-2"></i>
+                        <strong>Status:</strong>
+                        <span class="badge ${getStatusBadgeClass(booking.bookingStatus)}">${booking.bookingStatus}</span>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="info-item">
+                        <i class="fas fa-money-bill-wave text-golden me-2"></i>
+                        <strong>Total Amount:</strong> LKR ${formatCurrency(booking.totalAmount)}
+                    </div>
+                </div>
+            `;
+
+            // Populate update form
+            document.getElementById('update-checkin').value = booking.checkInDate;
+            document.getElementById('update-checkout').value = booking.checkOutDate;
+            document.getElementById('update-status').value = booking.bookingStatus;
+
+            bookingDetails.style.display = 'block';
+
+            // Show appropriate action buttons
+            const checkinBtn = document.getElementById('checkin-btn');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const editBtn = document.getElementById('edit-booking-btn');
+
+            checkinBtn.style.display = booking.bookingStatus === 'CONFIRMED' ? 'inline-block' : 'none';
+            checkoutBtn.style.display = booking.bookingStatus === 'CHECKED_IN' ? 'inline-block' : 'none';
+            editBtn.style.display = 'inline-block';
+        }
+
+        // Edit booking button
+        document.getElementById('edit-booking-btn').addEventListener('click', () => {
+            const updateForm = document.getElementById('update-form');
+            updateForm.style.display = updateForm.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Save updates
+        document.getElementById('save-updates').addEventListener('click', () => {
+            if (!currentBookingId) return;
+
+            const updatedData = {
+                checkInDate: document.getElementById('update-checkin').value,
+                checkOutDate: document.getElementById('update-checkout').value,
+                bookingStatus: document.getElementById('update-status').value
+            };
+
+            fetch(`/api/bookings/${currentBookingId}/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify(updatedData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Booking updated successfully!', 'success');
+                    searchBookingById(currentBookingId);
+                    document.getElementById('update-form').style.display = 'none';
+                } else {
+                    showMessage('Failed to update booking: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error updating booking. Please try again.', 'danger');
+            });
+        });
+
+        // Check-in functionality
+        document.getElementById('checkin-btn').addEventListener('click', () => {
+            if (confirm('Confirm check-in for this guest?')) {
+                performCheckIn();
+            }
+        });
+
+        // Check-out functionality
+        document.getElementById('checkout-btn').addEventListener('click', () => {
+            if (confirm('Confirm check-out for this guest?')) {
+                performCheckOut();
+            }
+        });
+
+        function performCheckIn() {
+            fetch(`/receptionist/booking/${currentBookingId}/checkin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Guest checked in successfully!', 'success');
+                    searchBookingById(currentBookingId);
+                } else {
+                    showMessage('Failed to check in: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error during check-in. Please try again.', 'danger');
+            });
+        }
+
+        function performCheckOut() {
+            fetch(`/receptionist/booking/${currentBookingId}/checkout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('Guest checked out successfully!', 'success');
+                    searchBookingById(currentBookingId);
+                } else {
+                    showMessage('Failed to check out: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Error during check-out. Please try again.', 'danger');
+            });
+        }
+
+        function showMessage(message, type) {
+            const actionResult = document.getElementById('action-result');
+            actionResult.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function formatCurrency(amount) {
+            return amount.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        }
+
+        function getStatusBadgeClass(status) {
+            const statusMap = {
+                'PENDING': 'bg-warning',
+                'CONFIRMED': 'bg-success',
+                'CHECKED_IN': 'bg-info',
+                'CHECKED_OUT': 'bg-secondary',
+                'CANCELLED': 'bg-danger'
+            };
+            return statusMap[status] || 'bg-secondary';
+        }
+    </script>
+</th:block>
+
+<th:block th:fragment="additional-css">
+    <style>
+        /* Dark Theme - Body and Background */
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+            color: #e0e0e0 !important;
+            min-height: 100vh;
+        }
+
+        /* Dark Cards */
+        .card {
+            background: rgba(26, 26, 46, 0.95) !important;
+            border: 1px solid rgba(212, 175, 55, 0.3) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Card Header - Dark with Golden Gradient */
+        .card-header {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(184, 148, 31, 0.2) 100%) !important;
+            border-bottom: 2px solid #d4af37 !important;
+            padding: 1.5rem;
+        }
+
+        .card-header h2, .card-header h3 {
+            color: #d4af37 !important;
+            font-weight: 600;
+        }
+
+        /* Card Body */
+        .card-body {
+            background: rgba(22, 33, 62, 0.6) !important;
+            color: #e0e0e0 !important;
+        }
+
+        /* Info Items - Dark Theme */
+        .info-item {
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.9) 100%);
+            border-radius: 12px;
+            border-left: 4px solid #d4af37;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+            border-left-color: #e6c453;
+        }
+
+        .info-item strong {
+            color: #d4af37;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-item span {
+            color: #b8b8b8;
+            font-size: 1.05rem;
+        }
+
+        /* Scanner Container - Dark */
+        #qr-scanner-container {
+            background: rgba(26, 26, 46, 0.8);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        #qr-video {
+            border: 3px solid #d4af37 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Scanner Info Box - Dark Golden */
+        .scanner-info {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(184, 148, 31, 0.15) 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        .scanner-info h4 {
+            color: #d4af37;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .scanner-info ul li {
+            padding: 0.5rem 0;
+            color: #b8b8b8;
+            font-weight: 500;
+        }
+
+        /* Form Labels - Golden */
+        .form-label {
+            color: #d4af37 !important;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Form Controls - Dark */
+        .form-control {
+            background: rgba(26, 26, 46, 0.9) !important;
+            border: 2px solid rgba(212, 175, 55, 0.3) !important;
+            color: #e0e0e0 !important;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(26, 26, 46, 0.95) !important;
+            border-color: #d4af37 !important;
+            box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25) !important;
+            color: #e0e0e0 !important;
+        }
+
+        .form-control::placeholder {
+            color: rgba(224, 224, 224, 0.4);
+        }
+
+        /* Buttons - Golden Theme */
+        .btn {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #198754 0%, #157347 100%);
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #1aa862 0%, #16804f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 135, 84, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #e04555 0%, #c83545 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.6);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #e6c453 0%, #d4af37 100%);
+            color: #1a1a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #7a828a 0%, #686f76 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.6);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #ffca2c 0%, #ffc107 100%);
+            color: #1a1a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.6);
+        }
+
+        .btn-outline-danger {
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            background: transparent;
+        }
+
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.6);
+        }
+
+        /* Alerts - Dark Theme */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, rgba(13, 202, 240, 0.2) 0%, rgba(11, 182, 216, 0.2) 100%);
+            color: #6dd5fa;
+            border-left: 4px solid #0dcaf0;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(25, 135, 84, 0.2) 0%, rgba(20, 115, 71, 0.2) 100%);
+            color: #75fb91;
+            border-left: 4px solid #198754;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(187, 45, 59, 0.2) 100%);
+            color: #ff6b81;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 179, 0, 0.2) 100%);
+            color: #ffda79;
+            border-left: 4px solid #ffc107;
+        }
+
+        /* Badges - Golden */
+        .badge {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+
+        /* Update Form - Dark Golden */
+        #update-form {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(184, 148, 31, 0.15) 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        #update-form h4 {
+            color: #d4af37;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 0.75rem;
+        }
+
+        /* Booking Actions - Dark */
+        .booking-actions {
+            background: rgba(26, 26, 46, 0.6);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* Section Spacing */
+        section.mb-4 {
+            margin-bottom: 2rem !important;
+        }
+
+        /* Card Shadow Glow - Dark Theme */
+        .shadow-glow {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .shadow-glow:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.25);
+        }
+
+        /* Quick Actions Enhancement */
+        .quick-actions .btn {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        /* Text Colors */
+        h1, h2, h3, h4, h5, h6 {
+            color: #d4af37 !important;
+        }
+
+        p, span, li {
+            color: #b8b8b8;
+        }
+
+        /* Select Dropdown - Dark */
+        select.form-control {
+            background: rgba(26, 26, 46, 0.9) !important;
+            color: #e0e0e0 !important;
+        }
+
+        select.form-control option {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+    </style>
+</th:block>
+</body>
+</html>

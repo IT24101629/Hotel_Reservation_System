@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>My Profile - Golden Palm Hotel</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Hero Section -->
+    <section class="hero-section" style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/banner/profile.jpg') center/cover no-repeat;">
+        <div class="container">
+            <div class="text-center">
+                <div class="fade-in-up">
+                    <div class="mb-4">
+                        <div class="d-inline-block position-relative">
+                            <div class="bg-golden rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width: 120px; height: 120px; font-size: 3rem; color: #0a0a0a;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="position-absolute bottom-0 end-0 bg-success rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width: 35px; height: 35px;" th:if="${user != null and user.isActive}">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <div class="position-absolute bottom-0 end-0 bg-danger rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width: 35px; height: 35px;" th:unless="${user != null and user.isActive}">
+                                <i class="fas fa-times text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h1 class="display-4 mb-6 text-golden">
+                        <i class="fas fa-user-circle me-3"></i>
+                        <span th:text="${user != null ? user.firstName + ' ' + user.lastName : 'Guest User'}">User Name</span>
+                    </h1>
+                </div>
+                <div class="fade-in-up" style="animation-delay: 0.2s;">
+                    <p class="lead mb-8">
+                        Manage your account information and preferences at Golden Palm Hotel
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Profile Information -->
+    <section class="py-5">
+        <div class="container">
+            <!-- Success/Error Messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${success}">Success message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span th:text="${error}">Error message</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Account Information Card -->
+            <div class="card shadow-glow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0">
+                            <i class="fas fa-id-card text-golden me-3"></i>
+                            Account Information
+                        </h2>
+                        <p class="mt-2 mb-0">Your personal and contact details</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-warning" id="editBtn" onclick="enableEdit()">
+                            <i class="fas fa-edit me-1"></i>Edit Profile
+                        </button>
+                        <button class="btn btn-success d-none" id="saveBtn" onclick="saveProfile()">
+                            <i class="fas fa-save me-1"></i>Save Changes
+                        </button>
+                        <button class="btn btn-secondary d-none" id="cancelBtn" onclick="cancelEdit()">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm" method="post" th:action="@{/profile/update}">
+                        <!-- Personal Information -->
+                        <h4 class="text-golden mb-3">
+                            <i class="fas fa-user me-2"></i>Personal Details
+                        </h4>
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="firstName" name="firstName"
+                                           th:value="${user != null ? user.firstName : ''}"
+                                           placeholder="First Name" readonly required>
+                                    <label for="firstName">
+                                        <i class="fas fa-user me-2 text-golden"></i>First Name
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="lastName" name="lastName"
+                                           th:value="${user != null ? user.lastName : ''}"
+                                           placeholder="Last Name" readonly required>
+                                    <label for="lastName">
+                                        <i class="fas fa-user me-2 text-golden"></i>Last Name
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email"
+                                           th:value="${user != null ? user.email : ''}"
+                                           placeholder="Email" readonly disabled>
+                                    <label for="email">
+                                        <i class="fas fa-envelope me-2 text-golden"></i>Email Address (Cannot be changed)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="username" name="username"
+                                           th:value="${user != null ? user.username : ''}"
+                                           placeholder="Username" readonly required>
+                                    <label for="username">
+                                        <i class="fas fa-at me-2 text-golden"></i>Username
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <h4 class="text-golden mb-3">
+                            <i class="fas fa-phone me-2"></i>Contact Details
+                        </h4>
+                        <div class="row g-4 mb-5">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="tel" class="form-control" id="phone" name="phoneNumber"
+                                           th:value="${customer != null ? customer.phoneNumber : ''}"
+                                           placeholder="Phone Number" readonly>
+                                    <label for="phone">
+                                        <i class="fas fa-phone me-2 text-golden"></i>Phone Number
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="city" name="city"
+                                           th:value="${customer != null ? customer.city : ''}"
+                                           placeholder="City" readonly>
+                                    <label for="city">
+                                        <i class="fas fa-city me-2 text-golden"></i>City
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="address" name="address"
+                                              placeholder="Address" style="height: 100px" readonly
+                                              th:text="${customer != null ? customer.address : ''}"></textarea>
+                                    <label for="address">
+                                        <i class="fas fa-map-marker-alt me-2 text-golden"></i>Address
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="country" name="country"
+                                           th:value="${customer != null ? customer.country : ''}"
+                                           placeholder="Country" readonly>
+                                    <label for="country">
+                                        <i class="fas fa-flag me-2 text-golden"></i>Country
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="postalCode" name="postalCode"
+                                           th:value="${customer != null ? customer.postalCode : ''}"
+                                           placeholder="Postal Code" readonly>
+                                    <label for="postalCode">
+                                        <i class="fas fa-mail-bulk me-2 text-golden"></i>Postal Code
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth"
+                                           th:value="${customer != null and customer.dateOfBirth != null ? customer.dateOfBirth : ''}"
+                                           placeholder="Date of Birth" readonly>
+                                    <label for="dateOfBirth">
+                                        <i class="fas fa-birthday-cake me-2 text-golden"></i>Date of Birth
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Account Status -->
+                    <h4 class="text-golden mb-3">
+                        <i class="fas fa-shield-alt me-2"></i>Account Status
+                    </h4>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 border rounded">
+                                <div class="me-3">
+                                    <i class="fas fa-power-off text-golden fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Account Status</h6>
+                                    <span class="badge bg-success" th:if="${user != null and user.isActive}">
+                                        <i class="fas fa-check-circle me-1"></i>Active
+                                    </span>
+                                    <span class="badge bg-danger" th:unless="${user != null and user.isActive}">
+                                        <i class="fas fa-times-circle me-1"></i>Inactive
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 border rounded">
+                                <div class="me-3">
+                                    <i class="fas fa-envelope-check text-golden fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Email Verification</h6>
+                                    <span class="badge bg-primary" th:if="${user != null and user.emailVerified}">
+                                        <i class="fas fa-shield-check me-1"></i>Verified
+                                    </span>
+                                    <span class="badge bg-warning" th:unless="${user != null and user.emailVerified}">
+                                        <i class="fas fa-clock me-1"></i>Pending
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <button class="btn btn-primary" onclick="changePassword()">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </button>
+                        <a href="/dashboard" class="btn btn-secondary">
+                            <i class="fas fa-tachometer-alt me-2"></i>Back to Dashboard
+                        </a>
+                        <button class="btn btn-danger" onclick="deleteAccount()">
+                            <i class="fas fa-trash-alt me-2"></i>Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Account Summary -->
+    <section class="py-5">
+        <div class="container">
+            <div class="card shadow-glow">
+                <div class="card-header text-center">
+                    <h2 class="mb-0">
+                        <i class="fas fa-chart-line text-golden me-3"></i>
+                        Account Summary
+                    </h2>
+                    <p class="mt-2 mb-0">Your activity and statistics at Golden Palm Hotel</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="text-center p-4 border rounded shadow-sm">
+                                <div class="mb-3">
+                                    <i class="fas fa-calendar-check text-golden display-6"></i>
+                                </div>
+                                <h3 class="text-golden mb-2">0</h3>
+                                <p class="mb-0 small text-muted">Total Bookings</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="text-center p-4 border rounded shadow-sm">
+                                <div class="mb-3">
+                                    <i class="fas fa-bed text-golden display-6"></i>
+                                </div>
+                                <h3 class="text-golden mb-2">0</h3>
+                                <p class="mb-0 small text-muted">Completed Stays</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="text-center p-4 border rounded shadow-sm">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-plus text-golden display-6"></i>
+                                </div>
+                                <h3 class="text-golden mb-2" th:text="${user != null ? #temporals.format(user.createdAt, 'yyyy') : 'N/A'}">2025</h3>
+                                <p class="mb-0 small text-muted">Member Since</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="text-center p-4 border rounded shadow-sm">
+                                <div class="mb-3 text-golden">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <h3 class="text-golden mb-2">5.0</h3>
+                                <p class="mb-0 small text-muted">Guest Rating</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Premium Membership Badge -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center">
+                <div class="d-inline-block">
+                    <span class="badge bg-golden text-dark fs-6 px-4 py-3">
+                        <i class="fas fa-crown me-2"></i>Premium Member
+                        <span class="ms-2" th:text="'Since ' + (${user != null ? #temporals.format(user.createdAt, 'yyyy') : '2025'})">Since 2025</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Additional JavaScript -->
+<th:block th:fragment="additional-js">
+    <script>
+        // Store original values for cancel functionality
+        let originalValues = {};
+
+        function enableEdit() {
+            // Store original values
+            const form = document.getElementById('profileForm');
+            const inputs = form.querySelectorAll('input:not([disabled]), textarea');
+            inputs.forEach(input => {
+                originalValues[input.id] = input.value;
+            });
+
+            // Enable all inputs except email
+            inputs.forEach(input => {
+                input.removeAttribute('readonly');
+                input.classList.add('border-warning');
+            });
+
+            // Toggle buttons
+            document.getElementById('editBtn').classList.add('d-none');
+            document.getElementById('saveBtn').classList.remove('d-none');
+            document.getElementById('cancelBtn').classList.remove('d-none');
+        }
+
+        function saveProfile() {
+            if (confirm('Are you sure you want to save these changes?')) {
+                document.getElementById('profileForm').submit();
+            }
+        }
+
+        function cancelEdit() {
+            // Restore original values
+            const form = document.getElementById('profileForm');
+            const inputs = form.querySelectorAll('input:not([disabled]), textarea');
+            inputs.forEach(input => {
+                if (originalValues[input.id] !== undefined) {
+                    input.value = originalValues[input.id];
+                }
+                input.setAttribute('readonly', 'readonly');
+                input.classList.remove('border-warning');
+            });
+
+            // Toggle buttons
+            document.getElementById('editBtn').classList.remove('d-none');
+            document.getElementById('saveBtn').classList.add('d-none');
+            document.getElementById('cancelBtn').classList.add('d-none');
+        }
+
+        function changePassword() {
+            if (confirm('Redirect to password change page?')) {
+                window.location.href = '/auth/change-password';
+            }
+        }
+
+        function deleteAccount() {
+            const confirmed = confirm(
+                'WARNING: This action cannot be undone!\n\n' +
+                'Are you absolutely sure you want to delete your account?\n' +
+                'All your data including bookings, reviews, and personal information will be permanently removed.'
+            );
+
+            if (confirmed) {
+                const doubleConfirm = confirm(
+                    'This is your last chance!\n\n' +
+                    'Click OK to permanently delete your account, or Cancel to keep it.'
+                );
+
+                if (doubleConfirm) {
+                    // Create and submit delete form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/profile/delete';
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>
